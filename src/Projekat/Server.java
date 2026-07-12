@@ -12,6 +12,8 @@ public class Server {
 
     public static List<ClientHandler> clients = new ArrayList<>();
 
+    public static java.util.Map<String, Room> sobe = new java.util.concurrent.ConcurrentHashMap<>();
+
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
 
