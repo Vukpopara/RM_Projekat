@@ -12,7 +12,7 @@ public class Komunikacija {
 
         System.out.println("\n=== GLAVNI MENI APLIKACIJE ===");
         System.out.println("1. Otvori listu tematskih kanala (Chat)");
-        System.out.println("2. Tehnicka podrska (Ticketing System)");
+        System.out.println("2. Tehnicka podrška (Ticketing System)");
         System.out.print("Izaberite opciju (1 ili 2): ");
 
         String opcija = scanner.nextLine();
@@ -31,12 +31,16 @@ public class Komunikacija {
         }
 
         else if (opcija.equals("2")) {
-            out.println("TIKET_SISTEM");
-            System.out.println("\nUlazak u sistem tehnicke podrske...");
+            System.out.println("\n=== KREIRANJE TIKETA ZA TEHNICKU PODRSKU ===");
+            System.out.print("Opisite vaš problem ukratko: ");
+            String opisProblema = scanner.nextLine();
+
+            out.println("OTVORI_TIKET:" + opisProblema);
+            System.out.println("\nTiket uspjesno kreiran. Povezivanje sa tehnickom podrskom...");
         }
 
-        System.out.println("\n=== CHAT JE AKTIVAN ===");
-        System.out.println("Mozete poceti sa kucanjem poruka (Za izlaz ukucajte /izlaz)...\n");
+        System.out.println("\n=== KOMUNIKACIJA JE AKTIVNA ===");
+        System.out.println("Mozete poceti sa kucanjem (Za izlaz ukucajte /izlaz)...\n");
 
         Thread nitZaCitanje = new Thread(() -> {
             try {
