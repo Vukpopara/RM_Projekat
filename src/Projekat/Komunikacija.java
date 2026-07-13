@@ -10,37 +10,48 @@ public class Komunikacija {
 
         String korisnickoIme = PrijavaKorisnika.izvrsiPrijavu(out, scanner);
 
-        System.out.println("\n=== GLAVNI MENI APLIKACIJE ===");
-        System.out.println("1. Otvori listu tematskih kanala (Chat)");
-        System.out.println("2. Tehnicka podrška (Ticketing System)");
-        System.out.print("Izaberite opciju (1 ili 2): ");
+        boolean isAdmin = korisnickoIme.equalsIgnoreCase("admin");
 
-        String opcija = scanner.nextLine();
+        if (isAdmin) {
+            System.out.println("\n=== DOBRODOŠLI, ADMINISTRATORE ===");
+            System.out.println("Automatski ste prebačeni u sistem za tehničku podršku.");
+            out.println("ADMIN_PRIJAVA");
+        } else {
 
-        if (opcija.equals("1")) {
-            System.out.println("\n=== DOSTUPNI TEMATSKI KANALI ===");
-            System.out.println("1. Programiranje");
-            System.out.println("2. Dizajn");
-            System.out.println("3. Opste teme");
-            System.out.print("Izaberite broj kanala za ulazak: ");
+            System.out.println("\n=== GLAVNI MENI APLIKACIJE ===");
+            System.out.println("1. Otvori listu tematskih kanala (Chat)");
+            System.out.println("2. Tehnička podrška (Ticketing System)");
+            System.out.print("Izaberite opciju (1 ili 2): ");
 
-            String izabraniKanal = scanner.nextLine();
+            String opcija = scanner.nextLine();
 
-            out.println("KANAL:" + izabraniKanal);
-            System.out.println("\nUspjesno ste usli u kanal!");
-        }
+            if (opcija.equals("1")) {
+                System.out.println("\n=== DOSTUPNI TEMATSKI KANALI ===");
+                System.out.println("1. Programiranje");
+                System.out.println("2. Dizajn");
+                System.out.println("3. Opšte teme");
+                System.out.print("Izaberite broj kanala za ulazak: ");
 
-        else if (opcija.equals("2")) {
-            System.out.println("\n=== KREIRANJE TIKETA ZA TEHNICKU PODRSKU ===");
-            System.out.print("Opisite vaš problem ukratko: ");
-            String opisProblema = scanner.nextLine();
+                String izabraniKanal = scanner.nextLine();
+                out.println("KANAL:" + izabraniKanal);
+                System.out.println("\nUspješno ste ušli u kanal!");
+            }
+            else if (opcija.equals("2")) {
+                System.out.println("\n=== KREIRANJE TIKETA ZA TEHNIČKU PODRŠKU ===");
+                System.out.print("Opišite vaš problem ukratko: ");
+                String opisProblema = scanner.nextLine();
 
-            out.println("OTVORI_TIKET:" + opisProblema);
-            System.out.println("\nTiket uspjesno kreiran. Povezivanje sa tehnickom podrskom...");
+                out.println("OTVORI_TIKET:" + opisProblema);
+                System.out.println("\nTiket uspješno kreiran. Povezivanje sa tehničkom podrškom...");
+            }
         }
 
         System.out.println("\n=== KOMUNIKACIJA JE AKTIVNA ===");
-        System.out.println("Mozete poceti sa kucanjem (Za izlaz ukucajte /izlaz)...\n");
+        if (isAdmin) {
+            System.out.println("Komande: /tiketi (pregled svih), /odgovori [ID] [poruka] (odgovor na tiket), /izlaz\n");
+        } else {
+            System.out.println("Komande: /korisnici (pregled online korisnika), /izlaz (napuštanje)\n");
+        }
 
         Thread nitZaCitanje = new Thread(() -> {
             try {
@@ -61,7 +72,15 @@ public class Komunikacija {
                 break;
             }
 
-            out.println(korisnickoIme + ": " + tekstPoruke);
+            if (tekstPoruke.equalsIgnoreCase("/korisnici")) {
+                out.println("GET_KORISNICI");
+            } else if (tekstPoruke.equalsIgnoreCase("/tiketi") && isAdmin) {
+                out.println("GET_TIKETI");
+            } else if (tekstPoruke.startsWith("/odgovori ") && isAdmin) {
+                out.println("ADMIN_ODGOVOR:" + tekstPoruke.substring(10));
+            } else {
+                out.println(korisnickoIme + ": " + tekstPoruke);
+            }
         }
     }
 }
