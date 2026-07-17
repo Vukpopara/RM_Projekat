@@ -26,18 +26,28 @@ public class ClientHandler implements Runnable {
             out = new PrintWriter(
                     socket.getOutputStream(), true);
 
+
             username = in.readLine();
 
             out.println("Dobrodosao " + username);
 
             String message;
 
+
             while ((message = in.readLine()) != null) {
 
 
+                if (message.equals("/izlaz")) {
+                    break;
+                }
+
+
                 if (message.equals("ADMIN_PRIJAVA")) {
+
                     admin = true;
+
                     out.println("Uspjesna admin prijava.");
+
                     continue;
                 }
 
@@ -47,6 +57,7 @@ public class ClientHandler implements Runnable {
                     String brojKanala = message.substring(6);
 
                     String nazivSobe = "";
+
 
                     if (brojKanala.equals("1")) {
                         nazivSobe = "Programiranje";
@@ -58,7 +69,9 @@ public class ClientHandler implements Runnable {
                         nazivSobe = "Opste teme";
                     }
                     else {
+
                         out.println("Nepostojeci kanal.");
+
                         continue;
                     }
 
@@ -74,7 +87,9 @@ public class ClientHandler implements Runnable {
 
 
                     currentRoom = room;
+
                     currentRoom.addClient(this);
+
 
                     currentRoom.broadcast(
                             username + " se pridruzio sobi.");
@@ -82,13 +97,16 @@ public class ClientHandler implements Runnable {
                     continue;
                 }
 
-
                 if (message.equals("GET_KORISNICI")) {
+
 
                     String lista = "Aktivni korisnici: ";
 
+
                     for (ClientHandler client : Server.clients) {
+
                         lista += client.username + " ";
+
                     }
 
                     out.println(lista);
@@ -96,8 +114,8 @@ public class ClientHandler implements Runnable {
                     continue;
                 }
 
-
                 if (currentRoom != null) {
+
 
                     currentRoom.broadcast(
                             username + ": " + message);
@@ -108,6 +126,7 @@ public class ClientHandler implements Runnable {
                             "Prvo izaberite kanal.");
 
                 }
+
             }
 
 
@@ -120,7 +139,9 @@ public class ClientHandler implements Runnable {
 
             if (currentRoom != null) {
 
+
                 currentRoom.removeClient(this);
+
 
                 currentRoom.broadcast(
                         username + " je napustio sobu.");
@@ -140,11 +161,14 @@ public class ClientHandler implements Runnable {
                 e.printStackTrace();
 
             }
+
         }
+
     }
 
-
     public void sendMessage(String message) {
+
         out.println(message);
+
     }
 }
