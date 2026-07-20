@@ -114,6 +114,44 @@ public class ClientHandler implements Runnable {
                     continue;
                 }
 
+                if (message.startsWith("OTVORI_TIKET:")) {
+
+                    String opis = message.substring(14);
+
+                    Ticket ticket = new Ticket(
+                            Server.tickets.size() + 1,
+                            username,
+                            opis);
+
+                    Server.tickets.add(ticket);
+
+                    out.println("Tiket uspjesno kreiran. ID: " + ticket.getId());
+
+                    continue;
+                }
+                if (message.equals("GET_TIKETI")) {
+
+                    if (!admin) {
+                        out.println("Nemate administratorska prava.");
+                        continue;
+                    }
+
+                    if (Server.tickets.isEmpty()) {
+                        out.println("Nema aktivnih tiketa.");
+                        continue;
+                    }
+
+                    for (Ticket ticket : Server.tickets) {
+                        if (!ticket.isZatvoren()) {
+                            out.println("ID: " + ticket.getId()
+                                    + " | Korisnik: " + ticket.getKorisnik()
+                                    + " | Opis: " + ticket.getOpis());
+                        }
+                    }
+
+                    continue;
+                }
+
                 if (currentRoom != null) {
 
 

@@ -14,6 +14,8 @@ public class Server {
 
     public static java.util.Map<String, Room> sobe = new java.util.concurrent.ConcurrentHashMap<>();
 
+    public static List<Ticket> tickets = new ArrayList<>();
+
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
 
