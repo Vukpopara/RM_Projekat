@@ -136,6 +136,8 @@ public class ClientHandler implements Runnable {
                         continue;
                     }
 
+
+
                     if (Server.tickets.isEmpty()) {
                         out.println("Nema aktivnih tiketa.");
                         continue;
@@ -147,6 +149,37 @@ public class ClientHandler implements Runnable {
                                     + " | Korisnik: " + ticket.getKorisnik()
                                     + " | Opis: " + ticket.getOpis());
                         }
+                    }
+
+                    continue;
+                }
+                if (message.startsWith("ZATVORI_TIKET:")) {
+
+                    if (!admin) {
+                        out.println("Nemate administratorska prava.");
+                        continue;
+                    }
+
+                    int id = Integer.parseInt(message.substring(15));
+
+                    boolean pronadjen = false;
+
+                    for (Ticket ticket : Server.tickets) {
+
+                        if (ticket.getId() == id) {
+
+                            ticket.zatvori();
+
+                            out.println("Tiket " + id + " je zatvoren.");
+
+                            pronadjen = true;
+
+                            break;
+                        }
+                    }
+
+                    if (!pronadjen) {
+                        out.println("Tiket nije pronađen.");
                     }
 
                     continue;
