@@ -6,11 +6,13 @@ public class Ticket {
     private String korisnik;
     private String opis;
     private boolean zatvoren;
+    private String odgovor;
 
     public Ticket(int id, String korisnik, String opis) {
         this.id = id;
         this.korisnik = korisnik;
         this.opis = opis;
+        this.odgovor = "";
         this.zatvoren = false;
     }
 
@@ -24,6 +26,14 @@ public class Ticket {
 
     public String getOpis() {
         return opis;
+    }
+
+    public String getOdgovor() {
+        return odgovor;
+    }
+
+    public void dodajOdgovor(String odgovor) {
+        this.odgovor = odgovor;
     }
 
     public boolean isZatvoren() {

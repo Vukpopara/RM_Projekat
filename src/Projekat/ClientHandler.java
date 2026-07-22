@@ -20,12 +20,12 @@ public class ClientHandler implements Runnable {
     public void run() {
 
         try {
+
             in = new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
 
             out = new PrintWriter(
                     socket.getOutputStream(), true);
-
 
             username = in.readLine();
 
@@ -33,14 +33,11 @@ public class ClientHandler implements Runnable {
 
             String message;
 
-
             while ((message = in.readLine()) != null) {
-
 
                 if (message.equals("/izlaz")) {
                     break;
                 }
-
 
                 if (message.equals("ADMIN_PRIJAVA")) {
 
@@ -51,13 +48,11 @@ public class ClientHandler implements Runnable {
                     continue;
                 }
 
-
                 if (message.startsWith("KANAL:")) {
 
                     String brojKanala = message.substring(6);
 
                     String nazivSobe = "";
-
 
                     if (brojKanala.equals("1")) {
                         nazivSobe = "Programiranje";
@@ -69,27 +64,20 @@ public class ClientHandler implements Runnable {
                         nazivSobe = "Opste teme";
                     }
                     else {
-
                         out.println("Nepostojeci kanal.");
-
                         continue;
                     }
-
 
                     Room room = Server.sobe.computeIfAbsent(
                             nazivSobe,
                             Room::new);
 
-
                     if (currentRoom != null) {
                         currentRoom.removeClient(this);
                     }
 
-
                     currentRoom = room;
-
                     currentRoom.addClient(this);
-
 
                     currentRoom.broadcast(
                             username + " se pridruzio sobi.");
@@ -99,14 +87,10 @@ public class ClientHandler implements Runnable {
 
                 if (message.equals("GET_KORISNICI")) {
 
-
                     String lista = "Aktivni korisnici: ";
 
-
                     for (ClientHandler client : Server.clients) {
-
                         lista += client.username + " ";
-
                     }
 
                     out.println(lista);
@@ -125,18 +109,20 @@ public class ClientHandler implements Runnable {
 
                     Server.tickets.add(ticket);
 
-                    out.println("Tiket uspjesno kreiran. ID: " + ticket.getId());
+                    out.println(
+                            "Tiket uspjesno kreiran. ID: "
+                                    + ticket.getId());
 
                     continue;
                 }
+
                 if (message.equals("GET_TIKETI")) {
 
                     if (!admin) {
-                        out.println("Nemate administratorska prava.");
+                        out.println(
+                                "Nemate administratorska prava.");
                         continue;
                     }
-
-
 
                     if (Server.tickets.isEmpty()) {
                         out.println("Nema aktivnih tiketa.");
@@ -144,15 +130,62 @@ public class ClientHandler implements Runnable {
                     }
 
                     for (Ticket ticket : Server.tickets) {
+
                         if (!ticket.isZatvoren()) {
-                            out.println("ID: " + ticket.getId()
-                                    + " | Korisnik: " + ticket.getKorisnik()
-                                    + " | Opis: " + ticket.getOpis());
+
+                            out.println(
+                                    "ID: " + ticket.getId()
+                                            + " | Korisnik: "
+                                            + ticket.getKorisnik()
+                                            + " | Opis: "
+                                            + ticket.getOpis());
                         }
                     }
 
                     continue;
                 }
+                if (message.startsWith("ADMIN_ODGOVOR:")) {
+
+                    if (!admin) {
+                        out.println("Nemate administratorska prava.");
+                        continue;
+                    }
+
+                    String podaci = message.substring(16);
+
+                    String[] dijelovi = podaci.split(" ", 2);
+
+                    if (dijelovi.length < 2) {
+                        out.println("Neispravan format.");
+                        continue;
+                    }
+
+                    int id = Integer.parseInt(dijelovi[0]);
+                    String odgovor = dijelovi[1];
+
+                    boolean pronadjen = false;
+
+                    for (Ticket ticket : Server.tickets) {
+
+                        if (ticket.getId() == id) {
+
+                            ticket.dodajOdgovor(odgovor);
+
+                            out.println("Odgovor dodat na tiket " + id);
+
+                            pronadjen = true;
+
+                            break;
+                        }
+                    }
+
+                    if (!pronadjen) {
+                        out.println("Tiket nije pronađen.");
+                    }
+
+                    continue;
+                }
+
                 if (message.startsWith("ZATVORI_TIKET:")) {
 
                     if (!admin) {
@@ -187,19 +220,16 @@ public class ClientHandler implements Runnable {
 
                 if (currentRoom != null) {
 
-
                     currentRoom.broadcast(
                             username + ": " + message);
 
                 } else {
 
-                    out.println(
-                            "Prvo izaberite kanal.");
+                    out.println("Prvo izaberite kanal.");
 
                 }
 
             }
-
 
         } catch (Exception e) {
 
@@ -207,21 +237,16 @@ public class ClientHandler implements Runnable {
 
         } finally {
 
-
             if (currentRoom != null) {
 
-
                 currentRoom.removeClient(this);
-
 
                 currentRoom.broadcast(
                         username + " je napustio sobu.");
 
             }
 
-
             Server.clients.remove(this);
-
 
             try {
 
@@ -242,4 +267,5 @@ public class ClientHandler implements Runnable {
         out.println(message);
 
     }
+
 }
