@@ -131,15 +131,14 @@ public class ClientHandler implements Runnable {
 
                     for (Ticket ticket : Server.tickets) {
 
-                        if (!ticket.isZatvoren()) {
+                        String status = ticket.isZatvoren()
+                                ? "ZATVOREN"
+                                : "OTVOREN";
 
-                            out.println(
-                                    "ID: " + ticket.getId()
-                                            + " | Korisnik: "
-                                            + ticket.getKorisnik()
-                                            + " | Opis: "
-                                            + ticket.getOpis());
-                        }
+                        out.println("ID: " + ticket.getId()
+                                + " | Korisnik: " + ticket.getKorisnik()
+                                + " | Opis: " + ticket.getOpis()
+                                + " | Status: " + status);
                     }
 
                     continue;
