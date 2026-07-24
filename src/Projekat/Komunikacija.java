@@ -84,6 +84,8 @@ public class Komunikacija {
                     out.println("GET_TIKETI");
                 } else if (tekstPoruke.startsWith("/odgovori ") && isAdmin) {
                     out.println("ADMIN_ODGOVOR:" + tekstPoruke.substring(10));
+                }else if (tekstPoruke.startsWith("/preuzmi ") && isAdmin) {
+                        out.println("PREUZMI_TIKET:" + tekstPoruke.substring(10));
                 } else if (tekstPoruke.startsWith("/zatvori ") && isAdmin) {
                     out.println("ZATVORI_TIKET:" + tekstPoruke.substring(9));
                 } else {

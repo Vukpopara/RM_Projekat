@@ -97,7 +97,6 @@ public class ClientHandler implements Runnable {
 
                     continue;
                 }
-
                 if (message.startsWith("OTVORI_TIKET:")) {
 
                     String opis = message.substring(14);
@@ -119,8 +118,7 @@ public class ClientHandler implements Runnable {
                 if (message.equals("GET_TIKETI")) {
 
                     if (!admin) {
-                        out.println(
-                                "Nemate administratorska prava.");
+                        out.println("Nemate administratorska prava.");
                         continue;
                     }
 
@@ -143,6 +141,39 @@ public class ClientHandler implements Runnable {
 
                     continue;
                 }
+
+                if (message.startsWith("PREUZMI_TIKET:")) {
+
+                    if (!admin) {
+                        out.println("Nemate administratorska prava.");
+                        continue;
+                    }
+
+                    int id = Integer.parseInt(message.substring(15));
+
+                    boolean pronadjen = false;
+
+                    for (Ticket ticket : Server.tickets) {
+
+                        if (ticket.getId() == id) {
+
+                            ticket.dodajAdministratora(username);
+
+                            out.println("Preuzeli ste tiket " + id);
+
+                            pronadjen = true;
+
+                            break;
+                        }
+                    }
+
+                    if (!pronadjen) {
+                        out.println("Tiket nije pronađen.");
+                    }
+
+                    continue;
+                }
+
                 if (message.startsWith("ADMIN_ODGOVOR:")) {
 
                     if (!admin) {
@@ -216,7 +247,6 @@ public class ClientHandler implements Runnable {
 
                     continue;
                 }
-
                 if (currentRoom != null) {
 
                     currentRoom.broadcast(
