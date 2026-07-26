@@ -201,6 +201,8 @@ public class ClientHandler implements Runnable {
 
                             ticket.dodajOdgovor(odgovor);
 
+                            ticket.osvjeziAktivnost();
+
                             out.println("Odgovor dodat na tiket " + id);
 
                             pronadjen = true;

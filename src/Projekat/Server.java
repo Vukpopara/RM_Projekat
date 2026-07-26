@@ -21,6 +21,9 @@ public class Server {
 
             System.out.println("Server slusa na portu: " + PORT);
 
+            Thread timeoutThread = new Thread(new TicketTimeout());
+            timeoutThread.start();
+
             while (true) {
                 Socket clientSocket = serverSocket.accept();
 

@@ -11,6 +11,8 @@ public class Ticket {
     private boolean zatvoren;
     private String odgovor;
     private List<String> administrator;
+    private long vrijemeKreiranja;
+    private long zadnjaAktivnost;
 
     public Ticket(int id, String korisnik, String opis) {
         this.id = id;
@@ -19,6 +21,9 @@ public class Ticket {
         this.odgovor = "";
         this.administrator = new ArrayList<>();
         this.zatvoren = false;
+        this.vrijemeKreiranja = System.currentTimeMillis();
+        this.zadnjaAktivnost = System.currentTimeMillis();
+
     }
 
     public int getId() {
@@ -39,6 +44,17 @@ public class Ticket {
 
     public void dodajOdgovor(String odgovor) {
         this.odgovor = odgovor;
+    }
+    public long getVrijemeKreiranja() {
+        return vrijemeKreiranja;
+    }
+
+    public long getZadnjaAktivnost() {
+        return zadnjaAktivnost;
+    }
+
+    public void osvjeziAktivnost() {
+        zadnjaAktivnost = System.currentTimeMillis();
     }
 
     public boolean isZatvoren() {
