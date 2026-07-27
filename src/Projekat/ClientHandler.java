@@ -203,6 +203,18 @@ public class ClientHandler implements Runnable {
 
                             ticket.osvjeziAktivnost();
 
+                            for (ClientHandler client : Server.clients) {
+
+                                if (client.username.equals(ticket.getKorisnik())) {
+
+                                    client.sendMessage(
+                                            "Administrator je odgovorio na vas tiket (ID: "
+                                                    + id + "): " + odgovor);
+
+                                    break;
+                                }
+                            }
+
                             out.println("Odgovor dodat na tiket " + id);
 
                             pronadjen = true;
