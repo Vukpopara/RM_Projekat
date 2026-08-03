@@ -29,6 +29,15 @@ public class ClientHandler implements Runnable {
 
             username = in.readLine();
 
+            if (!ProvjeraKorisnika.postojiKorisnik(username)) {
+
+                out.println("Korisnik nije registrovan.");
+
+                socket.close();
+
+                return;
+            }
+
             out.println("Dobrodosao " + username);
 
             String message;
