@@ -12,54 +12,32 @@ public class LoginFrame extends JFrame {
 
     public LoginFrame() {
         setTitle("Ticketing Sistem - Prijava");
-        setSize(380, 230);
+        setSize(350, 220);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centriranje prozora na ekranu
+        setLocationRelativeTo(null);
         setResizable(false);
 
         network = new ClientNetwork();
-        boolean connected = network.connect("localhost", 8080);
-
-        if (!connected) {
-            JOptionPane.showMessageDialog(this,
-                    "Nije moguće povezivanje sa serverom! Provjerite da li je server pokrenut.",
-                    "Greška konekcije",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-
         network.setOnMessageReceived(this::handleServerResponse);
+        network.connect("localhost", 8080);
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JPanel mainPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        gbc.gridx = 0; gbc.gridy = 0;
-        panel.add(new JLabel("Korisničko ime:"), gbc);
+        mainPanel.add(new JLabel("Korisničko ime:"));
+        txtUsername = new JTextField();
+        mainPanel.add(txtUsername);
 
-        txtUsername = new JTextField(15);
-        gbc.gridx = 1; gbc.gridy = 0;
-        panel.add(txtUsername, gbc);
+        mainPanel.add(new JLabel("Lozinka:"));
+        txtPassword = new JPasswordField();
+        mainPanel.add(txtPassword);
 
-        gbc.gridx = 0; gbc.gridy = 1;
-        panel.add(new JLabel("Lozinka:"), gbc);
-
-        txtPassword = new JPasswordField(15);
-        gbc.gridx = 1; gbc.gridy = 1;
-        panel.add(txtPassword, gbc);
-
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         btnLogin = new JButton("Prijava");
         btnRegister = new JButton("Registracija");
+        mainPanel.add(btnLogin);
+        mainPanel.add(btnRegister);
 
-        btnPanel.add(btnRegister);
-        btnPanel.add(btnLogin);
-
-        gbc.gridx = 0; gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        panel.add(btnPanel, gbc);
-
-        add(panel);
+        add(mainPanel);
 
         btnLogin.addActionListener(e -> performLogin());
         btnRegister.addActionListener(e -> performRegister());
@@ -70,7 +48,7 @@ public class LoginFrame extends JFrame {
         String password = new String(txtPassword.getPassword()).trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Popunite sva polja!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Molimo unesite korisničko ime i lozinku.", "Greška", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -82,7 +60,7 @@ public class LoginFrame extends JFrame {
         String password = new String(txtPassword.getPassword()).trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Popunite sva polja!", "Upozorenje", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Molimo unesite korisničko ime i lozinku.", "Greška", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -90,13 +68,22 @@ public class LoginFrame extends JFrame {
     }
 
     private void handleServerResponse(String response) {
+        System.out.println("[SERVER ODGOVOR NA LOGIN]: " + response);
+
         SwingUtilities.invokeLater(() -> {
-            if (response.startsWith("LOGIN_SUCCESS") || response.startsWith("OK_LOGIN")) {
+            String lowerRes = response.toLowerCase();
+
+            if (lowerRes.contains("dobrodosao") || lowerRes.contains("uspesno") || lowerRes.contains("uspjesna prijava")) {
                 JOptionPane.showMessageDialog(this, "Uspješna prijava!", "Info", JOptionPane.INFORMATION_MESSAGE);
-            } else if (response.startsWith("REGISTER_SUCCESS") || response.startsWith("OK_REGISTER")) {
-                JOptionPane.showMessageDialog(this, "Registracija uspješna! Možete se prijaviti.", "Info", JOptionPane.INFORMATION_MESSAGE);
+
+                String username = txtUsername.getText().trim();
+
+                UserDashboardFrame dashboard = new UserDashboardFrame(username, network);
+                dashboard.setVisible(true);
+                this.dispose();
+
             } else {
-                JOptionPane.showMessageDialog(this, response, "Odgovor servera", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, response, "Obavještenje", JOptionPane.INFORMATION_MESSAGE);
             }
         });
     }
