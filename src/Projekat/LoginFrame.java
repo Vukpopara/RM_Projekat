@@ -73,7 +73,16 @@ public class LoginFrame extends JFrame {
         SwingUtilities.invokeLater(() -> {
             String lowerRes = response.toLowerCase();
 
-            if (lowerRes.contains("dobrodosao") || lowerRes.contains("uspesno") || lowerRes.contains("uspjesna prijava")) {
+            if (lowerRes.contains("admin")) {
+                JOptionPane.showMessageDialog(this, "Uspješna prijava (ADMIN)!", "Info", JOptionPane.INFORMATION_MESSAGE);
+
+                String username = txtUsername.getText().trim();
+
+                AdminDashboardFrame adminFrame = new AdminDashboardFrame(username, network);
+                adminFrame.setVisible(true);
+                this.dispose();
+
+            } else if (lowerRes.contains("dobrodosao") || lowerRes.contains("uspesno") || lowerRes.contains("uspjesna prijava")) {
                 JOptionPane.showMessageDialog(this, "Uspješna prijava!", "Info", JOptionPane.INFORMATION_MESSAGE);
 
                 String username = txtUsername.getText().trim();
