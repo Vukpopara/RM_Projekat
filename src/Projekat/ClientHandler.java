@@ -63,8 +63,15 @@ public class ClientHandler implements Runnable {
                             out.println("Pogrešna lozinka.");
                         } else {
                             this.username = u;
-                            out.println("Dobrodosao " + username);
-                            break; // Izlazimo iz login petlje i prelazimo na obradu poruka/kanala
+
+                            // PROVJERAVAMO DA LI JE KORISNIK ADMIN
+                            if (u.toLowerCase().contains("admin")) {
+                                this.admin = true;
+                                out.println("Uspjesna prijava (ADMIN)! Dobrodosao " + username);
+                            } else {
+                                out.println("Uspjesna prijava! Dobrodosao " + username);
+                            }
+                            break;
                         }
                     } else {
                         out.println("Neispravan format prijave.");
@@ -72,11 +79,9 @@ public class ClientHandler implements Runnable {
                     continue;
                 }
 
-                // Ako stigne bilo šta drugo prije login/register
                 out.println("Molimo prijavite se ili registrujte.");
             }
 
-            // Petlja za komunikaciju u aplikaciji
             String message;
             while ((message = in.readLine()) != null) {
 
@@ -84,36 +89,39 @@ public class ClientHandler implements Runnable {
                     break;
                 }
 
-                if (message.equals("ADMIN_PRIJAVA")) {
-                    admin = true;
-                    out.println("Uspjesna admin prijava.");
+
+                if (message.startsWith("CHAT:")) {
+                    String[] dijelovi = message.split(":", 4);
+                    if (dijelovi.length == 4) {
+                        String nazivSobe = dijelovi[1];
+                        String posiljalac = dijelovi[2];
+                        String tekstPoruke = dijelovi[3];
+
+                        Room room = Server.sobe.computeIfAbsent(nazivSobe, Room::new);
+                        if (currentRoom == null || !currentRoom.equals(room)) {
+                            if (currentRoom != null) {
+                                currentRoom.removeClient(this);
+                            }
+                            currentRoom = room;
+                            currentRoom.addClient(this);
+                        }
+                        currentRoom.broadcast("[" + nazivSobe + "] " + posiljalac + ": " + tekstPoruke);
+                    }
                     continue;
                 }
 
-                if (message.startsWith("KANAL:")) {
-                    String brojKanala = message.substring(6);
-                    String nazivSobe = "";
-
-                    if (brojKanala.equals("1")) {
-                        nazivSobe = "Programiranje";
-                    } else if (brojKanala.equals("2")) {
-                        nazivSobe = "Dizajn";
-                    } else if (brojKanala.equals("3")) {
-                        nazivSobe = "Opste teme";
+                if (message.startsWith("NOVI_TIKET:") || message.startsWith("OTVORI_TIKET:")) {
+                    String opis = "";
+                    if (message.startsWith("NOVI_TIKET:")) {
+                        String[] d = message.split(":", 3);
+                        opis = (d.length == 3) ? d[2] : message;
                     } else {
-                        out.println("Nepostojeci kanal.");
-                        continue;
+                        opis = message.substring(14);
                     }
 
-                    Room room = Server.sobe.computeIfAbsent(nazivSobe, Room::new);
-
-                    if (currentRoom != null) {
-                        currentRoom.removeClient(this);
-                    }
-
-                    currentRoom = room;
-                    currentRoom.addClient(this);
-                    currentRoom.broadcast(username + " se pridruzio sobi.");
+                    Ticket ticket = new Ticket(Server.tickets.size() + 1, username, opis);
+                    Server.tickets.add(ticket);
+                    out.println("[SISTEM] Tiket je kreiran sa ID broj: " + ticket.getId());
                     continue;
                 }
 
@@ -126,21 +134,13 @@ public class ClientHandler implements Runnable {
                     continue;
                 }
 
-                if (message.startsWith("OTVORI_TIKET:")) {
-                    String opis = message.substring(14);
-                    Ticket ticket = new Ticket(Server.tickets.size() + 1, username, opis);
-                    Server.tickets.add(ticket);
-                    out.println("Tiket uspjesno kreiran. ID: " + ticket.getId());
-                    continue;
-                }
-
                 if (message.equals("GET_TIKETI")) {
                     if (!admin) {
                         out.println("Nemate administratorska prava.");
                         continue;
                     }
                     if (Server.tickets.isEmpty()) {
-                        out.println("Nema aktivnih tiketa.");
+                        out.println("Nema aktivnih tiketa u sistemu.");
                         continue;
                     }
 
@@ -157,20 +157,24 @@ public class ClientHandler implements Runnable {
                         continue;
                     }
 
-                    int id = Integer.parseInt(message.substring(15));
-                    boolean pronadjen = false;
+                    try {
+                        int id = Integer.parseInt(message.substring(15).trim());
+                        boolean pronadjen = false;
 
-                    for (Ticket ticket : Server.tickets) {
-                        if (ticket.getId() == id) {
-                            ticket.dodajAdministratora(username);
-                            out.println("Preuzeli ste tiket " + id);
-                            pronadjen = true;
-                            break;
+                        for (Ticket ticket : Server.tickets) {
+                            if (ticket.getId() == id) {
+                                ticket.dodajAdministratora(username);
+                                out.println("[ADMIN] Uspešno ste preuzeli tiket ID: " + id);
+                                pronadjen = true;
+                                break;
+                            }
                         }
-                    }
 
-                    if (!pronadjen) {
-                        out.println("Tiket nije pronađen.");
+                        if (!pronadjen) {
+                            out.println("Tiket sa ID " + id + " nije pronađen.");
+                        }
+                    } catch (NumberFormatException e) {
+                        out.println("Neispravan ID tiketa.");
                     }
                     continue;
                 }
@@ -181,64 +185,72 @@ public class ClientHandler implements Runnable {
                         continue;
                     }
 
-                    String podaci = message.substring(16);
-                    String[] dijelovi = podaci.split(" ", 2);
+                    String podaci = message.substring(14);
+                    String[] dijelovi = podaci.split(":", 2);
 
                     if (dijelovi.length < 2) {
-                        out.println("Neispravan format.");
+                        out.println("Neispravan format odgovora.");
                         continue;
                     }
 
-                    int id = Integer.parseInt(dijelovi[0]);
-                    String odgovor = dijelovi[1];
-                    boolean pronadjen = false;
+                    try {
+                        int id = Integer.parseInt(dijelovi[0].trim());
+                        String odgovor = dijelovi[1].trim();
+                        boolean pronadjen = false;
 
-                    for (Ticket ticket : Server.tickets) {
-                        if (ticket.getId() == id) {
-                            ticket.dodajOdgovor(odgovor);
-                            ticket.osvjeziAktivnost();
+                        for (Ticket ticket : Server.tickets) {
+                            if (ticket.getId() == id) {
+                                ticket.dodajOdgovor(odgovor);
+                                ticket.osvjeziAktivnost();
 
-                            for (ClientHandler client : Server.clients) {
-                                if (client.username.equals(ticket.getKorisnik())) {
-                                    client.sendMessage("Administrator je odgovorio na vas tiket (ID: " + id + "): " + odgovor);
-                                    break;
+                                for (ClientHandler client : Server.clients) {
+                                    if (client.username != null && client.username.equals(ticket.getKorisnik())) {
+                                        client.sendMessage("[ODGOVOR NA TIKET ID " + id + "]: " + odgovor);
+                                    }
                                 }
+                                out.println("[ADMIN] Odgovor dodan na tiket ID: " + id);
+                                pronadjen = true;
+                                break;
                             }
-                            out.println("Odgovor dodat na tiket " + id);
-                            pronadjen = true;
-                            break;
                         }
-                    }
 
-                    if (!pronadjen) {
-                        out.println("Tiket nije pronađen.");
+                        if (!pronadjen) {
+                            out.println("Tiket nije pronađen.");
+                        }
+                    } catch (NumberFormatException e) {
+                        out.println("Neispravan ID tiketa.");
                     }
                     continue;
                 }
 
-                if (message.startsWith("ZATVORI_TIKET:")) {
+                if (message.startsWith("ZATVORI TIKET:")) {
                     if (!admin) {
                         out.println("Nemate administratorska prava.");
                         continue;
                     }
 
-                    int id = Integer.parseInt(message.substring(15));
-                    boolean pronadjen = false;
+                    try {
+                        int id = Integer.parseInt(message.substring(15).trim());
+                        boolean pronadjen = false;
 
-                    for (Ticket ticket : Server.tickets) {
-                        if (ticket.getId() == id) {
-                            ticket.zatvori();
-                            out.println("Tiket " + id + " je zatvoren.");
-                            pronadjen = true;
-                            break;
+                        for (Ticket ticket : Server.tickets) {
+                            if (ticket.getId() == id) {
+                                ticket.zatvori();
+                                out.println("[SISTEM] Tiket ID " + id + " je zatvoren.");
+                                pronadjen = true;
+                                break;
+                            }
                         }
-                    }
 
-                    if (!pronadjen) {
-                        out.println("Tiket nije pronađen.");
+                        if (!pronadjen) {
+                            out.println("Tiket nije pronađen.");
+                        }
+                    } catch (NumberFormatException e) {
+                        out.println("Neispravan ID tiketa.");
                     }
                     continue;
                 }
+
 
                 if (currentRoom != null) {
                     currentRoom.broadcast(username + ": " + message);
@@ -248,22 +260,23 @@ public class ClientHandler implements Runnable {
             }
 
         } catch (Exception e) {
-            System.out.println("Klijent se odjavio.");
+            System.out.println("Klijent (" + (username != null ? username : "nepoznat") + ") se odjavio.");
         } finally {
             if (currentRoom != null) {
                 currentRoom.removeClient(this);
-                currentRoom.broadcast(username + " je napustio sobu.");
             }
             Server.clients.remove(this);
             try {
                 socket.close();
             } catch (Exception e) {
-                e.printStackTrace();
+
             }
         }
     }
 
     public void sendMessage(String message) {
-        out.println(message);
+        if (out != null) {
+            out.println(message);
+        }
     }
 }

@@ -1,3 +1,8 @@
 igor:1234
 vuk:2255
+<<<<<<< HEAD
 admin:1234
+=======
+srdjan:1456
+jovan:12345
+>>>>>>> e777ecf (Doradjena prijava i provjera korisnika)
