@@ -12,7 +12,7 @@ public class AdminDashboardFrame extends JFrame {
     private JTextField txtTicketId;
     private JTextField txtReply;
     private JButton btnSendReply;
-    private JButton btnCloseTicket; // DODATO DUGME
+    private JButton btnCloseTicket;
     private JButton btnRefresh;
 
     public AdminDashboardFrame(String username, ClientNetwork network) {
@@ -46,14 +46,14 @@ public class AdminDashboardFrame extends JFrame {
         txtTicketId = new JTextField(5);
         txtReply = new JTextField(20);
         btnSendReply = new JButton("Pošalji odgovor");
-        btnCloseTicket = new JButton("Zatvori tiket"); // DODATO DUGME
+        btnCloseTicket = new JButton("Zatvori tiket");
 
         replyInputPanel.add(new JLabel("ID Tiketa:"));
         replyInputPanel.add(txtTicketId);
         replyInputPanel.add(new JLabel("Odgovor:"));
         replyInputPanel.add(txtReply);
         replyInputPanel.add(btnSendReply);
-        replyInputPanel.add(btnCloseTicket); // DODATO U PANEL
+        replyInputPanel.add(btnCloseTicket);
 
         bottomPanel.add(replyInputPanel);
 
@@ -63,7 +63,7 @@ public class AdminDashboardFrame extends JFrame {
         add(bottomPanel, BorderLayout.SOUTH);
 
         btnSendReply.addActionListener(e -> sendAdminReply());
-        btnCloseTicket.addActionListener(e -> closeTicket()); // DODAT LISTENER
+        btnCloseTicket.addActionListener(e -> closeTicket());
         btnRefresh.addActionListener(e -> refreshTickets());
 
         refreshTickets();
@@ -91,15 +91,12 @@ public class AdminDashboardFrame extends JFrame {
 
         if (network != null) {
             network.sendCommand("ADMIN_ODGOVOR:" + ticketId + ":" + reply);
-
             txtTicketsArea.append("[JA -> TIKET " + ticketId + "]: " + reply + "\n");
-
             txtTicketId.setText("");
             txtReply.setText("");
         }
     }
 
-    // DODATA METODA ZA ZATVARANJE TIKETA
     private void closeTicket() {
         String ticketId = txtTicketId.getText().trim();
 
