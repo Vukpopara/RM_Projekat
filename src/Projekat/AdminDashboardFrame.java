@@ -12,7 +12,7 @@ public class AdminDashboardFrame extends JFrame {
     private JTextField txtTicketId;
     private JTextField txtReply;
     private JButton btnSendReply;
-    private JButton btnCloseTicket; // DODATO DUGME
+    private JButton btnCloseTicket;
     private JButton btnRefresh;
 
     public AdminDashboardFrame(String username, ClientNetwork network) {
@@ -46,7 +46,7 @@ public class AdminDashboardFrame extends JFrame {
         txtTicketId = new JTextField(5);
         txtReply = new JTextField(20);
         btnSendReply = new JButton("Pošalji odgovor");
-        btnCloseTicket = new JButton("Zatvori tiket"); // DODATO DUGME
+        btnCloseTicket = new JButton("Zatvori tiket");
 
         replyInputPanel.add(new JLabel("ID Tiketa:"));
         replyInputPanel.add(txtTicketId);
@@ -63,7 +63,7 @@ public class AdminDashboardFrame extends JFrame {
         add(bottomPanel, BorderLayout.SOUTH);
 
         btnSendReply.addActionListener(e -> sendAdminReply());
-        btnCloseTicket.addActionListener(e -> closeTicket()); // DODAT LISTENER
+        btnCloseTicket.addActionListener(e -> closeTicket());
         btnRefresh.addActionListener(e -> refreshTickets());
 
         refreshTickets();
@@ -99,7 +99,7 @@ public class AdminDashboardFrame extends JFrame {
         }
     }
 
-    // DODATA METODA ZA ZATVARANJE TIKETA
+
     private void closeTicket() {
         String ticketId = txtTicketId.getText().trim();
 

@@ -16,6 +16,10 @@ public class ClientHandler implements Runnable {
         this.socket = socket;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public void sendMessage(String msg) {
         if (out != null) {
             out.println(msg);
@@ -70,10 +74,11 @@ public class ClientHandler implements Runnable {
                         } else {
                             this.username = u;
 
-                            if (u.toLowerCase().contains("admin")) {
+                            if (ProvjeraKorisnika.isAdmin(u)) {
                                 this.admin = true;
                                 sendMessage("Uspjesna prijava (ADMIN)! Dobrodosao " + username);
                             } else {
+                                this.admin = false;
                                 sendMessage("Uspjesna prijava! Dobrodosao " + username);
                             }
                             break;
@@ -100,6 +105,26 @@ public class ClientHandler implements Runnable {
                                 username + " kuca..."
                         );
                     }
+                    continue;
+                }
+
+                if (message.startsWith("KREIRAJ_KANAL:")) {
+                    String naziv = message.substring(14).trim();
+                    if (!naziv.isEmpty()) {
+                        Server.sobe.computeIfAbsent(naziv, Room::new);
+                        sendMessage("[SISTEM] Kanal '" + naziv + "' je uspješno kreiran.");
+                    } else {
+                        sendMessage("[SISTEM] Naziv kanala ne može biti prazan.");
+                    }
+                    continue;
+                }
+
+                if (message.equals("GET_KANALI")) {
+                    StringBuilder sb = new StringBuilder("KANALI_LISTA:");
+                    for (String imeKanala : Server.sobe.keySet()) {
+                        sb.append(imeKanala).append(",");
+                    }
+                    sendMessage(sb.toString());
                     continue;
                 }
 
@@ -178,7 +203,7 @@ public class ClientHandler implements Runnable {
 
                     for (Ticket ticket : Server.tickets) {
                         String status = ticket.isZatvoren() ? "ZATVOREN" : "OTVOREN";
-                        sendMessage("ID: " + ticket.getId() + " | Korisnik: " + ticket.getKorisnik() + " | Opis: " + ticket.getOpis() + " | Status: " + status);
+                        sendMessage("ID: " + ticket.getId() + " | Korisnik: " + ticket.getKorisnik() + " | Opis: " + ticket.getOpis() + " | Status: " + status + " | Odgovori: " + ticket.getSviOdgovoriFormatirano());
                     }
                     continue;
                 }
@@ -231,7 +256,7 @@ public class ClientHandler implements Runnable {
                                     ticket.osvjeziAktivnost();
 
                                     for (ClientHandler client : Server.clients) {
-                                        if (client.username.equals(ticket.getKorisnik())) {
+                                        if (client.username.equalsIgnoreCase(ticket.getKorisnik())) {
                                             client.sendMessage("[ODGOVOR NA TIKET #" + id + "]: " + odgovor);
                                         }
                                     }
@@ -268,11 +293,35 @@ public class ClientHandler implements Runnable {
                                 ticket.zatvori();
                                 ticket.osvjeziAktivnost();
 
-                                sendMessage("[ADMIN] Tiket ID #" + id + " je uspješno zatvoren.");
+                                String imeFajla = "izvjestaj_tiket_" + id + ".txt";
+                                try (BufferedWriter writer = new BufferedWriter(new FileWriter(imeFajla))) {
+                                    writer.write("=== IZVJEŠTAJ O ZATVORENOM TIKETU ===");
+                                    writer.newLine();
+                                    writer.write("ID Tiketa: #" + ticket.getId());
+                                    writer.newLine();
+                                    writer.write("Korisnik: " + ticket.getKorisnik());
+                                    writer.newLine();
+                                    writer.write("Dodijeljeni Admin: " + ticket.getDodijeljeniAdmin());
+                                    writer.newLine();
+                                    writer.write("Opis problema: " + ticket.getOpis());
+                                    writer.newLine();
+                                    writer.write("------------------------------------");
+                                    writer.newLine();
+                                    writer.write("ISTORIJA ODGOVORA:");
+                                    writer.write(ticket.getSviOdgovoriFormatirano());
+                                    writer.newLine();
+                                    writer.write("------------------------------------");
+                                    writer.newLine();
+                                    writer.write("Status: ZATVOREN");
+                                    writer.newLine();
+                                } catch (IOException e) {
+                                    System.out.println("Greška pri upisu izvještaja: " + e.getMessage());
+                                }
+                                sendMessage("[ADMIN] Tiket ID #" + id + " je zatvoren i izvještaj je sačuvan (" + imeFajla + ").");
 
                                 for (ClientHandler client : Server.clients) {
-                                    if (client.username.equals(ticket.getKorisnik())) {
-                                        client.sendMessage("[SISTEM] Vaš tiket #" + id + " je zatvoren od strane administratora.");
+                                    if (client.username.equalsIgnoreCase(ticket.getKorisnik())) {
+                                        client.sendMessage("[SISTEM] Vaš tiket #" + id + " je zatvoren. Generisan je izvještaj.");
                                     }
                                 }
 
