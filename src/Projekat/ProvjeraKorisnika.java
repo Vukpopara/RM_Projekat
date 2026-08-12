@@ -6,7 +6,6 @@ public class ProvjeraKorisnika {
 
     private static final String FAJL = "korisnici.txt";
 
-
     public static boolean postojiKorisnik(String korisnik) {
         try (BufferedReader reader = new BufferedReader(new FileReader(FAJL))) {
             String linija;
@@ -22,13 +21,12 @@ public class ProvjeraKorisnika {
         return false;
     }
 
-
     public static boolean ispravnaPrijava(String korisnik, String lozinka) {
         try (BufferedReader reader = new BufferedReader(new FileReader(FAJL))) {
             String linija;
             while ((linija = reader.readLine()) != null) {
                 String[] dijelovi = linija.split(":");
-                if (dijelovi.length == 2) {
+                if (dijelovi.length >= 2) {
                     if (dijelovi[0].trim().equalsIgnoreCase(korisnik.trim()) &&
                             dijelovi[1].trim().equals(lozinka.trim())) {
                         return true;
@@ -41,12 +39,30 @@ public class ProvjeraKorisnika {
         return false;
     }
 
+    public static boolean isAdmin(String korisnik) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FAJL))) {
+            String linija;
+            while ((linija = reader.readLine()) != null) {
+                String[] dijelovi = linija.split(":");
+                if (dijelovi.length >= 1 && dijelovi[0].trim().equalsIgnoreCase(korisnik.trim())) {
+                    if (dijelovi.length >= 3) {
+                        return dijelovi[2].trim().equalsIgnoreCase("ADMIN");
+                    }
+                    return dijelovi[0].trim().toLowerCase().contains("admin");
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Greška pri čitanju fajla korisnika: " + e.getMessage());
+        }
+        return korisnik.toLowerCase().contains("admin");
+    }
+
     public static synchronized boolean registrujKorisnika(String korisnik, String lozinka) {
         if (postojiKorisnik(korisnik)) {
             return false;
         }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FAJL, true))) {
-            writer.write(korisnik.trim() + ":" + lozinka.trim());
+            writer.write(korisnik.trim() + ":" + lozinka.trim() + ":USER");
             writer.newLine();
             return true;
         } catch (IOException e) {

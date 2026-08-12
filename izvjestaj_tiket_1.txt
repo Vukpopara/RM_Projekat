@@ -1,0 +1,10 @@
+=== IZVJEŠTAJ O ZATVORENOM TIKETU ===
+ID Tiketa: #1
+Korisnik: igor
+Dodijeljeni Admin: Nije dodijeljen
+Opis problema: e mogu uci u kanal
+------------------------------------
+ISTORIJA ODGOVORA:
+   [1] probaj sada uci
+------------------------------------
+Status: ZATVOREN

@@ -53,7 +53,7 @@ public class AdminDashboardFrame extends JFrame {
         replyInputPanel.add(new JLabel("Odgovor:"));
         replyInputPanel.add(txtReply);
         replyInputPanel.add(btnSendReply);
-        replyInputPanel.add(btnCloseTicket); // DODATO U PANEL
+        replyInputPanel.add(btnCloseTicket);
 
         bottomPanel.add(replyInputPanel);
 
@@ -91,15 +91,16 @@ public class AdminDashboardFrame extends JFrame {
 
         if (network != null) {
             network.sendCommand("ADMIN_ODGOVOR:" + ticketId + ":" + reply);
-
             txtTicketsArea.append("[JA -> TIKET " + ticketId + "]: " + reply + "\n");
-
             txtTicketId.setText("");
             txtReply.setText("");
         }
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> ee784ef8a8e78111a62a3c857b0bc720d7b91d7d
     private void closeTicket() {
         String ticketId = txtTicketId.getText().trim();
 

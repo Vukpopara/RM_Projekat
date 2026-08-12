@@ -9,21 +9,18 @@ public class Ticket {
     private String korisnik;
     private String opis;
     private boolean zatvoren;
-    private String odgovor;
-    private List<String> administrator;
-    private long vrijemeKreiranja;
+    private List<String> odgovori;
+    private String dodijeljeniAdmin;
     private long zadnjaAktivnost;
 
     public Ticket(int id, String korisnik, String opis) {
         this.id = id;
         this.korisnik = korisnik;
         this.opis = opis;
-        this.odgovor = "";
-        this.administrator = new ArrayList<>();
         this.zatvoren = false;
-        this.vrijemeKreiranja = System.currentTimeMillis();
+        this.odgovori = new ArrayList<>();
+        this.dodijeljeniAdmin = "Nije dodijeljen";
         this.zadnjaAktivnost = System.currentTimeMillis();
-
     }
 
     public int getId() {
@@ -38,42 +35,46 @@ public class Ticket {
         return opis;
     }
 
-    public String getOdgovor() {
-        return odgovor;
-    }
-
-    public void dodajOdgovor(String odgovor) {
-        this.odgovor = odgovor;
-    }
-    public long getVrijemeKreiranja() {
-        return vrijemeKreiranja;
-    }
-
-    public long getZadnjaAktivnost() {
-        return zadnjaAktivnost;
-    }
-
-    public void osvjeziAktivnost() {
-        zadnjaAktivnost = System.currentTimeMillis();
-    }
-
     public boolean isZatvoren() {
         return zatvoren;
     }
 
     public void zatvori() {
-        zatvoren = true;
+        this.zatvoren = true;
     }
 
     public void dodajAdministratora(String admin) {
-
-        if (!administrator.contains(admin)) {
-            administrator.add(admin);
-        }
-
+        this.dodijeljeniAdmin = admin;
     }
 
-    public List<String> getAdministratori() {
-        return administrator;
+    public String getDodijeljeniAdmin() {
+        return dodijeljeniAdmin;
+    }
+
+    public void dodajOdgovor(String odgovor) {
+        this.odgovori.add(odgovor);
+    }
+
+    public List<String> getOdgovori() {
+        return odgovori;
+    }
+
+    public String getSviOdgovoriFormatirano() {
+        if (odgovori.isEmpty()) {
+            return "Nema odgovora.";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < odgovori.size(); i++) {
+            sb.append("\n   [" + (i + 1) + "] ").append(odgovori.get(i));
+        }
+        return sb.toString();
+    }
+
+    public void osvjeziAktivnost() {
+        this.zadnjaAktivnost = System.currentTimeMillis();
+    }
+
+    public long getZadnjaAktivnost() {
+        return zadnjaAktivnost;
     }
 }

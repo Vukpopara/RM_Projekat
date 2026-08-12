@@ -1,41 +1,49 @@
 package Projekat;
 
-    public class TicketTimeout implements Runnable {
+public class TicketTimeout implements Runnable {
 
-        @Override
-        public void run() {
+    @Override
+    public void run() {
 
-            while (true) {
+        while (true) {
 
-                try {
+            try {
 
-                    Thread.sleep(60000);
+                Thread.sleep(60000);
 
-                    long trenutnoVrijeme = System.currentTimeMillis();
+                long trenutnoVrijeme = System.currentTimeMillis();
 
-                    for (Ticket ticket : Server.tickets) {
+                for (Ticket ticket : Server.tickets) {
 
-                        if (!ticket.isZatvoren()) {
+                    if (!ticket.isZatvoren()) {
 
-                            long razlika =
-                                    trenutnoVrijeme - ticket.getZadnjaAktivnost();
+                        long razlika = trenutnoVrijeme - ticket.getZadnjaAktivnost();
 
-                            if (razlika >= 300000) {
+                        if (razlika >= 300000) {
 
-                                ticket.zatvori();
+                            ticket.zatvori();
 
-                                System.out.println(
-                                        "Tiket " + ticket.getId()
-                                                + " je automatski zatvoren.");
+                            System.out.println(
+                                    "Tiket " + ticket.getId()
+                                            + " je automatski zatvoren.");
 
+                            for (ClientHandler client : Server.clients) {
+                                if (client.getUsername() != null &&
+                                        client.getUsername().equalsIgnoreCase(ticket.getKorisnik())) {
+
+                                    client.sendMessage("[SISTEM] Vaš tiket ID #" + ticket.getId() +
+                                            " je automatski zatvoren zbog neaktivnosti (Timeout).");
+                                    break;
+                                }
                             }
+
                         }
                     }
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
-
+}
